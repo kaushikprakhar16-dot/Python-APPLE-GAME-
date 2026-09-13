@@ -1,0 +1,81 @@
+import pygame
+import random
+
+# Pygame initialize करें
+pygame.init()
+
+# स्क्रीन साइज और FPS
+WIDTH, HEIGHT = 600, 500
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Catch the Apple")
+clock = pygame.time.Clock()
+
+# कलर्स (RGB)
+BLACK = (15, 23, 42)
+WHITE = (255, 255, 255)
+RED = (239, 68, 68)
+BASKET_COLOR = (16, 185, 129)
+
+# प्लेयर (बास्केट)
+basket_width = 100
+basket_height = 20
+basket_x = (WIDTH - basket_width) // 2
+basket_y = HEIGHT - 40
+basket_speed = 8
+
+# गिरती हुई चीज़ (सेब)
+apple_size = 20
+apple_x = random.randint(0, WIDTH - apple_size)
+apple_y = 0
+apple_speed = 5
+
+# स्कोर
+score = 0
+font = pygame.font.SysFont("Arial", 24)
+
+# गेम लूप
+running = True
+while running:
+    # 1. इवेंट्स हैंडल करना
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 2. कीबोर्ड इनपुट (Left / Right arrow keys)
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and basket_x > 0:
+        basket_x -= basket_speed
+    if keys[pygame.K_RIGHT] and basket_x < WIDTH - basket_width:
+        basket_x += basket_speed
+
+    # 3. सेब की मूवमेंट
+    apple_y += apple_speed
+
+    # अगर बास्केट ने सेब को पकड़ लिया (Collision Check)
+    if (basket_y < apple_y + apple_size < basket_y + basket_height) and \
+       (basket_x < apple_x + apple_size and apple_x < basket_x + basket_width):
+        score += 1
+        apple_y = 0
+        apple_x = random.randint(0, WIDTH - apple_size)
+        apple_speed += 0.2  # धीरे-धीरे स्पीड बढ़ाएं
+
+    # अगर सेब नीचे गिरकर मिस हो गया
+    if apple_y > HEIGHT:
+        apple_y = 0
+        apple_x = random.randint(0, WIDTH - apple_size)
+
+    # 4. स्क्रीन ड्रा करना
+    screen.fill(BLACK)
+
+    # बास्केट और सेब ड्रा करें
+    pygame.draw.rect(screen, BASKET_COLOR, (basket_x, basket_y, basket_width, basket_height), border_radius=5)
+    pygame.draw.circle(screen, RED, (apple_x + apple_size // 2, apple_y + apple_size // 2), apple_size // 2)
+
+    # स्कोर टेक्स्ट
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(score_text, (10, 10))
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
